@@ -1,40 +1,64 @@
 const Post = require("./../model/Post.model");
 const User = require("./../model/User.model");
-const multer = require('multer');
+const multer = require("multer");
 
 //configure multer storage
 const multerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'public/img/posts')
+    cb(null, "public/img/posts");
   },
   filename: (req, file, cb) => {
     //get file extension
-    const ext = file.mimetype.split('/')[1];
-    cb(null, `post-${req.body.title}.${ext}`)
-  }
-})
+    const ext = file.mimetype.split("/")[1];
+    cb(null, `post-${req.body.title}.${ext}`);
+  },
+});
 
 //configure multer filter which will check if uploaded file is an image
 const multerFilter = (req, file, cb) => {
-  if(file.mimetype.startsWith('image')){
-    cb(null, true)
-  }else{
-    cb(new Error('Not an image. Please upload an image', false))
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new Error("Not an image. Please upload an image", false));
   }
-}
+};
 
 const upload = multer({
   storage: multerStorage,
-  fileFilter: multerFilter
-})
+  fileFilter: multerFilter,
+});
 
 //multer middleware for image upload
-exports.uploadCoverPhoto = upload.single('coverPhoto')
+exports.uploadCoverPhoto = upload.single("coverPhoto");
 //get all post
 exports.getAllPublishedPost = async (req, res) => {
-  try {
-    const posts = await Post.find({ state: "published" });
+  //define possible queries
+  const { query } = req;
 
+  const { author, title, tags } = query;
+
+  //build search query object to be able to filter results based on the query
+  const searchQuery = {};
+
+  if (author) {
+    searchQuery.author = author;
+  }
+
+  if (title) {
+    searchQuery.title = title;
+  }
+
+  if (tags) {
+    searchQuery.tags = tags;
+  }
+
+  try {
+    const posts = await Post.find({
+      author: { $regex: new RegExp(searchQuery.author, "i") },
+      title: { $regex: new RegExp(searchQuery.title, "i") },
+      tags: { $regex: new RegExp(searchQuery.tags, "i") },
+      state: "published",
+    });
     res.status(200).json({
       status: "success",
       posts,
@@ -58,7 +82,7 @@ exports.getASinglePublishedPost = async (req, res) => {
     } else {
       //increment the `readCount` property
       post.readCount === 0 ? post.readCount++ : post.readCount++;
-      post.save();
+      await post.save();
     }
 
     res.status(200).json({
@@ -84,12 +108,12 @@ exports.createAPost = async (req, res) => {
 
     let author = `${firstname} ${lastname}`;
     let authorId = req.user._id;
-    
-    //add cover photo fo image
-    let coverPhoto;
-    if(req.file){
-      coverPhoto = req.file.filename
-    }
+
+    // //add cover photo fo image
+    // let coverPhoto;
+    // if(req.file){
+    //   coverPhoto = req.file.filename
+    // }
 
     const post = await Post.create({
       title,
@@ -99,8 +123,7 @@ exports.createAPost = async (req, res) => {
       author,
       authorId,
       readTime,
-      coverPhoto
-     
+      // coverPhoto
     });
 
     //add created post to 'posts' array property on the user document
@@ -130,7 +153,7 @@ exports.updateAPost = async (req, res) => {
 
     //check if post belongs to a appropriate author
     if (post.authorId.toString() !== req.user.id) {
-      console.log(req.user.id)
+      console.log(req.user.id);
       return res.status(401).json({
         status: "Fail",
         message: `You can only update a post you created!`,
@@ -151,10 +174,11 @@ exports.deleteAPost = async (req, res) => {
     const post = await Post.findByIdAndRemove(req.params.postId, {
       authorId: req.user.id,
     });
-    if(!post) return res.status(404).json({
-      status: 'Fail',
-      message: 'Post with given Id not found'
-    })
+    if (!post)
+      return res.status(404).json({
+        status: "Fail",
+        message: "Post with given Id not found",
+      });
 
     if (post.authorId.toString() !== req.user.id) {
       return res.status(401).json({

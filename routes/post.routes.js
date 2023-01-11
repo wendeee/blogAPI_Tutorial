@@ -11,7 +11,7 @@ const router = express.Router();
 router.get('/', postController.getAllPublishedPost)
 router.get("/:postId", postController.getASinglePublishedPost)
 
-router.post("/", authController.authenticate, postController.uploadCoverPhoto, postController.createAPost) //protected route
+router.post("/", authController.authenticate,  postController.createAPost) //protected route postController.uploadCoverPhoto,
 router.put("/:postId", authController.authenticate, postController.updateAPost) //protected route
 router.delete("/:postId", authController.authenticate, postController.deleteAPost) //protected route
 
