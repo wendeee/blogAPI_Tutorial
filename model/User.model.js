@@ -42,12 +42,11 @@ UserSchema.pre("save", async function (next) {
 //Add a method to the Schema. This method will chain a
 //function that compares and validates the password.
 //in this case 'isValidPassword' is the function that gets called
-UserSchema.methods.isValidPassword = async function (
-  currentPassword,
-  storedUserPassword
-) {
-  return await bcrypt.compare(currentPassword, storedUserPassword);
-};
+UserSchema.methods.isValidPassword = async function (currentPassword,storedUserPassword){
+  return await bcrypt.compare(currentPassword, storedUserPassword)
+} 
+  
+
 
 const User = mongoose.model("User", UserSchema);
 module.exports = User;

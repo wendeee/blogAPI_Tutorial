@@ -1,5 +1,6 @@
 const User = require("./../model/User.model");
 const jwt = require("jsonwebtoken");
+const bcrypt = require('bcrypt')
 const { promisify } = require("util");
 
 const signToken = (id) => {
@@ -45,12 +46,12 @@ exports.login = async (req, res, next) => {
 
     //check if user exist in the database and compare passwords
     const user = await User.findOne({ email });
-    // console.log(user)
-    console.log(await user.isValidPassword(password, user.password))
+    console.log(user)
+    // console.log(await user.isValidPassword(password, user.password))
 
-    if (!user || !(await user.isValidPassword(password, user.password))) {
-      res.json("Incorrect email or password");
-      return next(new Error("Incorrect email or password"));
+    if (!user && !(await user.isValidPassword(password, user.password))) {
+      return res.json("Incorrect email or password");
+      // return next(new Error("Incorrect email or password"));
     }
 
      

@@ -59,6 +59,7 @@ exports.getAllPublishedPost = async (req, res) => {
       tags: { $regex: new RegExp(searchQuery.tags, "i") },
       state: "published",
     });
+    
     res.status(200).json({
       status: "success",
       posts,
@@ -109,11 +110,11 @@ exports.createAPost = async (req, res) => {
     let author = `${firstname} ${lastname}`;
     let authorId = req.user._id;
 
-    // //add cover photo fo image
-    // let coverPhoto;
-    // if(req.file){
-    //   coverPhoto = req.file.filename
-    // }
+    //add cover photo for a post
+    let coverPhoto;
+    if(req.file){
+      coverPhoto = req.file.filename
+    }
 
     const post = await Post.create({
       title,
@@ -123,7 +124,7 @@ exports.createAPost = async (req, res) => {
       author,
       authorId,
       readTime,
-      // coverPhoto
+      coverPhoto
     });
 
     //add created post to 'posts' array property on the user document

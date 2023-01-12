@@ -34,9 +34,9 @@ const PostSchema = new mongoose.Schema(
     readTime: {
       type: String,
     },
-    // coverPhoto: {
-    //   type: String,
-    // },
+    coverPhoto: {
+      type: String,
+    },
     // likes: {
     //   type: Number,
     //   default: 0,
